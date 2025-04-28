@@ -1,4 +1,5 @@
 import { Header } from "@/components/header";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -18,12 +19,14 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="pt-BR">
-        <body className={`${inter.className} antialiased`}>
-          <Header />
-          {children}
-        </body>
-      </html>
+      <TooltipProvider>
+        <html lang="pt-BR">
+          <body className={`${inter.className} antialiased min-h-dvh`}>
+            <Header />
+            {children}
+          </body>
+        </html>
+      </TooltipProvider>
     </ClerkProvider>
   );
 }

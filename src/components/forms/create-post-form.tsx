@@ -74,7 +74,10 @@ export function CreatePostForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6 bg-background p-4 md:p-6 rounded-xl border"
+      >
         <FormField
           control={form.control}
           name="content"
@@ -85,7 +88,7 @@ export function CreatePostForm() {
                 <Textarea
                   placeholder="Digite aqui o que você está pensando..."
                   disabled={isSubmitting}
-                  className="max-h-64 bg-background"
+                  className="max-h-64"
                   {...field}
                 />
               </FormControl>
@@ -148,7 +151,7 @@ export function CreatePostForm() {
           control={form.control}
           name="published"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+            <FormItem className="flex items-start gap-4">
               <FormControl>
                 <Checkbox
                   checked={field.value}
