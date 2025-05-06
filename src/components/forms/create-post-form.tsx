@@ -19,6 +19,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const formSchema = z.object({
@@ -45,7 +46,8 @@ export function CreatePostForm() {
     const response = await createPost(values);
 
     if (response?.error) {
-      form.setError("root", { message: response.error });
+      console.log("createPost error: ", response.error);
+      return toast.error("Ocorreu um erro", { description: response.error });
     }
 
     router.push("/");

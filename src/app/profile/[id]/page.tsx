@@ -20,7 +20,7 @@ export default async function ProfilePage({ params }: Props) {
 
   if (!user) return notFound();
 
-  const isOwner = userId === user.id;
+  const isOwner = userId === user.clerkId;
 
   return (
     <main className="max-w-2xl mx-auto space-y-8 py-8">
@@ -47,9 +47,7 @@ export default async function ProfilePage({ params }: Props) {
             />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <p>{user.username}</p>
-            </div>
+            <p className="text-muted-foreground">{user.username}</p>
 
             <h1 className="text-2xl tracking-tight">{user.name}</h1>
 

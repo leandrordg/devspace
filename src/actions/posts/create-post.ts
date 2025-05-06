@@ -20,22 +20,36 @@ export const createPost = async ({
 }: z.infer<typeof schema>) => {
   const user = await currentUser();
 
-  if (!user || !user.id) {
-    return { error: "User not authenticated" };
-  }
+  if (!user || !user.id) return { error: "Usuário não autenticado" };
 
   const userExists = await prisma.user.findUnique({
-    where: { id: user.id },
+    where: { clerkId: user.id },
   });
 
   if (!userExists) {
+    const email = user.primaryEmailAddress?.emailAddress || undefined;
+    const username = user.username || undefined;
+
+    const userWithEmailOrUsernameExists = await prisma.user.findFirst({
+      where: { NOT: { clerkId: user.id }, OR: [{ email }, { username }] },
+    });
+
+    if (userWithEmailOrUsernameExists) {
+      const message =
+        userWithEmailOrUsernameExists.username === user.username
+          ? "Nome de usuário já cadastrado"
+          : "Email já cadastrado";
+
+      return { error: message };
+    }
+
     await prisma.user.create({
       data: {
-        id: user.id,
-        published: true,
-        name: user.fullName ?? user.id,
+        clerkId: user.id,
+        private: true,
+        name: user.fullName || user.id,
         image: user.imageUrl,
-        username: user.username ?? user.id,
+        username: user.username || user.id,
         email: user.primaryEmailAddress
           ? user.primaryEmailAddress.emailAddress
           : user.id,

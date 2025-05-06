@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
-export const getProfileById = async (id: string) => {
+export const getProfileById = async (clerkId: string) => {
   return await prisma.user.findUnique({
-    where: { id },
+    where: { clerkId },
   });
 };

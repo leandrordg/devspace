@@ -1,4 +1,5 @@
 import { Header } from "@/components/header";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
@@ -23,6 +24,7 @@ export default function RootLayout({
         <html lang="pt-BR">
           <body className={`${inter.className} antialiased min-h-dvh`}>
             <Header />
+            <Toaster />
             {children}
           </body>
         </html>

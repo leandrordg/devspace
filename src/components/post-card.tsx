@@ -29,7 +29,7 @@ interface Props {
 export async function PostCard({ post, author, comments, likes }: Props) {
   const { userId } = await auth();
 
-  const isOwner = userId === author.id;
+  const isOwner = userId === author.clerkId;
 
   return (
     <div
@@ -37,7 +37,7 @@ export async function PostCard({ post, author, comments, likes }: Props) {
       className="space-y-4 bg-background p-4 md:p-6 rounded-xl border"
     >
       <div className="flex items-center gap-2">
-        <Link href={`/profile/${author.id}`}>
+        <Link href={`/profile/${author.clerkId}`}>
           <Avatar>
             <AvatarImage src={author.image} />
             <AvatarFallback>{author.name[0] + author.name[1]}</AvatarFallback>
@@ -45,7 +45,7 @@ export async function PostCard({ post, author, comments, likes }: Props) {
         </Link>
         <div>
           <div className="flex items-center gap-2">
-            <Link href={`/profile/${author.id}`}>
+            <Link href={`/profile/${author.clerkId}`}>
               <p>{author.username}</p>
             </Link>
             {!isOwner ? (
@@ -59,7 +59,7 @@ export async function PostCard({ post, author, comments, likes }: Props) {
                     <TooltipTrigger asChild>
                       <GlobeIcon className="size-4" />
                     </TooltipTrigger>
-                    <TooltipContent>Publicação pública</TooltipContent>
+                    <TooltipContent>Pública</TooltipContent>
                   </Tooltip>
                 ) : (
                   <Tooltip>
@@ -82,7 +82,7 @@ export async function PostCard({ post, author, comments, likes }: Props) {
         <p>{post.content}</p>
 
         {post.image && (
-          <div className="flex justify-center bg-muted/30 rounded-xl overflow-clip mt-4 max-h-[512px]">
+          <div className="flex justify-center bg-muted/30 rounded-xl overflow-clip mt-4 max-h-152 border">
             <Image
               src={post.image}
               alt="Imagem do post"
