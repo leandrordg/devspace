@@ -25,7 +25,6 @@ import {
   LogOutIcon,
   UserRoundIcon,
 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 
 export async function UserMenuSheet() {
@@ -76,14 +75,11 @@ export async function UserMenuSheet() {
         </VisuallyHidden>
 
         <div className="flex flex-col lg:flex-row items-start gap-2 lg:gap-4">
-          <div className="relative size-12 lg:size-24 rounded-full overflow-clip">
-            <Image
-              src={user.imageUrl}
-              alt={user.fullName ?? user.id}
-              className="bg-muted object-cover"
-              fill
-            />
-          </div>
+          <Avatar className="size-12 md:size-24">
+            <AvatarImage src={user.imageUrl} />
+            <AvatarFallback>{userInitials}</AvatarFallback>
+          </Avatar>
+          
           <div>
             <div className="flex items-center gap-2">
               <p>{user.username}</p>

@@ -86,8 +86,8 @@ export async function PostCard({ post, author, comments, likes }: Props) {
             <Image
               src={post.image}
               alt="Imagem do post"
-              width={500}
-              height={500}
+              width={1920}
+              height={1920}
               className="aspect-auto object-contain"
             />
           </div>

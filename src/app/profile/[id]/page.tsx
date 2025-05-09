@@ -1,10 +1,10 @@
 import { ProfileFeed } from "@/components/profile-feed";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { getProfileById } from "@/hooks/profiles/get-profile-by-id";
 import { formatDate } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { ChevronLeftIcon, SendIcon, UserRoundPlusIcon } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -22,6 +22,12 @@ export default async function ProfilePage({ params }: Props) {
 
   const isOwner = userId === user.clerkId;
 
+  const userInitials = user.name
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase())
+    .join("");
+
   return (
     <main className="max-w-2xl mx-auto space-y-8 py-8">
       <div className="px-4 md:px-0">
@@ -38,14 +44,11 @@ export default async function ProfilePage({ params }: Props) {
         className="space-y-4 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl border"
       >
         <div className="flex flex-col md:flex-row items-start gap-2 md:gap-4">
-          <div className="relative size-12 md:size-24 rounded-full overflow-clip">
-            <Image
-              src={user.image}
-              alt={user.username}
-              className="bg-muted object-cover"
-              fill
-            />
-          </div>
+          <Avatar className="size-12 md:size-24">
+            <AvatarImage src={user.image} />
+            <AvatarFallback>{userInitials}</AvatarFallback>
+          </Avatar>
+
           <div>
             <p className="text-muted-foreground">{user.username}</p>
 

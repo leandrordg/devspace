@@ -29,6 +29,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { User } from "../../../generated";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const formSchema = z.object({
   name: z.string().min(1).optional(),
@@ -114,30 +115,23 @@ export function UpdateUserForm({ user }: Props) {
 
   const { isSubmitting, isDirty } = form.formState;
 
+  const userInitials = (form.watch("name") || "")
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase())
+    .join("");
+
   return (
     <section className="space-y-8">
       <div className="space-y-6 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl border">
-        <div className="flex flex-col md:flex-row items-start gap-2 md:gap-4 ">
-          <div className="relative size-12 md:size-24 shrink-0">
-            {previewUrl || user.image ? (
-              <Image
-                src={previewUrl ?? user.image}
-                alt="Imagem de perfil"
-                className="bg-muted object-cover rounded-full overflow-clip"
-                fill
-              />
-            ) : (
-              <Image
-                src="/avatar-placeholder.png"
-                alt="Imagem de perfil"
-                className="bg-muted object-cover rounded-full overflow-clip"
-                fill
-              />
-            )}
-          </div>
+        <div className="flex flex-col md:flex-row items-start gap-2 md:gap-4">
+          <Avatar className="size-12 md:size-24">
+            <AvatarImage src={previewUrl ?? user.image} />
+            <AvatarFallback>{userInitials}</AvatarFallback>
+          </Avatar>
 
           <div>
-            <p className="text-muted-foreground">{form.watch("username")}</p>
+            <p className="text-muted-foreground">{userInitials}</p>
 
             <h1 className="text-2xl tracking-tight">{form.watch("name")}</h1>
 
