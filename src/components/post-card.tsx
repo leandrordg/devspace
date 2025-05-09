@@ -34,11 +34,11 @@ export async function PostCard({ post, author, comments, likes }: Props) {
   return (
     <div
       key={post.id}
-      className="space-y-4 bg-background p-4 md:p-6 rounded-xl border"
+      className="space-y-4 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl border"
     >
       <div className="flex items-center gap-2">
         <Link href={`/profile/${author.clerkId}`}>
-          <Avatar>
+          <Avatar className="size-8">
             <AvatarImage src={author.image} />
             <AvatarFallback>{author.name[0] + author.name[1]}</AvatarFallback>
           </Avatar>
@@ -82,7 +82,7 @@ export async function PostCard({ post, author, comments, likes }: Props) {
         <p>{post.content}</p>
 
         {post.image && (
-          <div className="flex justify-center bg-muted/30 rounded-xl overflow-clip mt-4 max-h-152 border">
+          <div className="flex justify-center bg-muted/50 dark:bg-muted/30 rounded-xl overflow-clip mt-4 max-h-152">
             <Image
               src={post.image}
               alt="Imagem do post"

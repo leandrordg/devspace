@@ -1,4 +1,5 @@
 import { Header } from "@/components/header";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -21,11 +22,18 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <TooltipProvider>
-        <html lang="pt-BR">
+        <html lang="pt-BR" suppressHydrationWarning>
           <body className={`${inter.className} antialiased min-h-dvh`}>
-            <Header />
-            <Toaster />
-            {children}
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Header />
+              <Toaster />
+              {children}
+            </ThemeProvider>
           </body>
         </html>
       </TooltipProvider>

@@ -1,6 +1,7 @@
 "use client";
 
 import { updateUser } from "@/actions/users/update-user";
+import { LoadingButton } from "@/components/loading-button";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -21,16 +22,11 @@ import {
 } from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  GlobeIcon,
-  GlobeLockIcon,
-  ImagesIcon,
-  Loader2Icon,
-  TrashIcon,
-} from "lucide-react";
+import { GlobeIcon, GlobeLockIcon, ImagesIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { User } from "../../../generated";
 
@@ -64,18 +60,43 @@ export function UpdateUserForm({ user }: Props) {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const response = await updateUser(values);
+    const { success, error } = await updateUser(values);
 
-    if (response?.error) {
-      console.log(response.error);
-      form.setError("root", { message: response.error });
+    if (success) {
+      setPreviewUrl(null);
+      toast.success(success);
+    }
+
+    if (error) {
+      console.log(error);
+      form.setError("root", { message: error });
+      toast.error(error);
     }
   }
 
   const handleChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
+    // in the future, we may use client-side image uploading, so we can upload larger images.
+    const MAX_FILE_SIZE = 1024 * 1024; // 1MB
+
     if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        form.setError("image", {
+          type: "manual",
+          message: "A imagem deve ter no máximo 1MB.",
+        });
+
+        setPreviewUrl(null);
+
+        if (fileInputRef.current) fileInputRef.current.value = "";
+
+        return;
+      }
+
+      form.clearErrors("image");
       form.setValue("image", file, { shouldDirty: true });
+
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
     } else {
@@ -85,7 +106,7 @@ export function UpdateUserForm({ user }: Props) {
 
   const handleRemoveImage = () => {
     setPreviewUrl(null);
-    form.setValue("image", undefined, { shouldDirty: true });
+    form.resetField("image");
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -95,7 +116,7 @@ export function UpdateUserForm({ user }: Props) {
 
   return (
     <section className="space-y-8">
-      <div className="space-y-6 bg-background p-4 md:p-6 rounded-xl border">
+      <div className="space-y-6 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl border">
         <div className="flex flex-col md:flex-row items-start gap-2 md:gap-4 ">
           <div className="relative size-12 md:size-24 shrink-0">
             {previewUrl || user.image ? (
@@ -152,7 +173,7 @@ export function UpdateUserForm({ user }: Props) {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-6 bg-background p-4 md:p-6 rounded-xl border"
+          className="space-y-6 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl border"
         >
           <FormField
             control={form.control}
@@ -305,13 +326,13 @@ export function UpdateUserForm({ user }: Props) {
           />
 
           <div className="flex items-center justify-end">
-            <Button type="submit" disabled={isSubmitting || !isDirty}>
-              {isSubmitting ? (
-                <Loader2Icon className="animate-spin" />
-              ) : (
-                "Publicar agora"
-              )}
-            </Button>
+            <LoadingButton
+              type="submit"
+              text="Atualizar perfil"
+              loadingText="Atualizando..."
+              disabled={isSubmitting || !isDirty}
+              loading={isSubmitting}
+            />
           </div>
         </form>
       </Form>

@@ -26,36 +26,7 @@ export const createPost = async ({
     where: { clerkId: user.id },
   });
 
-  if (!userExists) {
-    const email = user.primaryEmailAddress?.emailAddress || undefined;
-    const username = user.username || undefined;
-
-    const userWithEmailOrUsernameExists = await prisma.user.findFirst({
-      where: { NOT: { clerkId: user.id }, OR: [{ email }, { username }] },
-    });
-
-    if (userWithEmailOrUsernameExists) {
-      const message =
-        userWithEmailOrUsernameExists.username === user.username
-          ? "Nome de usuário já cadastrado"
-          : "Email já cadastrado";
-
-      return { error: message };
-    }
-
-    await prisma.user.create({
-      data: {
-        clerkId: user.id,
-        private: true,
-        name: user.fullName || user.id,
-        image: user.imageUrl,
-        username: user.username || user.id,
-        email: user.primaryEmailAddress
-          ? user.primaryEmailAddress.emailAddress
-          : user.id,
-      },
-    });
-  }
+  if (!userExists) return { error: "Usuário não existe" };
 
   let uploadResult: UploadApiResponse | undefined = undefined;
 
@@ -88,4 +59,6 @@ export const createPost = async ({
   });
 
   revalidatePath("/posts");
+
+  return { success: "Publicação adicionada com sucesso!" };
 };

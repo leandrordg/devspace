@@ -9,7 +9,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { formatDate } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { SignOutButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
@@ -29,25 +33,38 @@ export async function UserMenuSheet() {
 
   if (!user || !user.id) {
     return (
-      <Button size="sm" asChild>
-        <Link href="/auth/sign-in">
-          <LogInIcon />
-          <span className="hidden md:block">fazer login</span>
-        </Link>
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button size="icon" asChild>
+            <Link href="/auth/sign-in">
+              <LogInIcon />
+              <span className="sr-only">fazer login</span>
+            </Link>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Fazer login</TooltipContent>
+      </Tooltip>
     );
   }
 
+  const userInitials = [user.firstName, user.lastName]
+    .filter(Boolean)
+    .map((name) => name?.[0]?.toUpperCase())
+    .join("");
+
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Avatar>
-          <AvatarImage src={user.imageUrl} />
-          <AvatarFallback>
-            {user.firstName ? user.firstName[0] + user.firstName[1] : ""}
-          </AvatarFallback>
-        </Avatar>
-      </SheetTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <SheetTrigger asChild>
+            <Avatar>
+              <AvatarImage src={user.imageUrl} />
+              <AvatarFallback>{userInitials}</AvatarFallback>
+            </Avatar>
+          </SheetTrigger>
+        </TooltipTrigger>
+        <TooltipContent>Você</TooltipContent>
+      </Tooltip>
       <SheetContent>
         <VisuallyHidden>
           <SheetHeader>
@@ -91,6 +108,14 @@ export async function UserMenuSheet() {
           </SheetClose>
           <SheetClose asChild>
             <Button variant="outline" asChild>
+              <Link href={`/profile/${user.id}`}>
+                <UserRoundIcon />
+                Ver perfil
+              </Link>
+            </Button>
+          </SheetClose>
+          <SheetClose asChild>
+            <Button variant="outline" asChild>
               <Link href="/settings">
                 <BoltIcon />
                 Configurações
@@ -102,14 +127,6 @@ export async function UserMenuSheet() {
               <Link href="/posts/create">
                 <CirclePlusIcon />
                 Adicionar um post
-              </Link>
-            </Button>
-          </SheetClose>
-          <SheetClose asChild>
-            <Button variant="outline" asChild>
-              <Link href={`/profile/${user.id}`}>
-                <UserRoundIcon />
-                Ver perfil
               </Link>
             </Button>
           </SheetClose>

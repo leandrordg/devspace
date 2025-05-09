@@ -2,7 +2,7 @@
 
 import { cloudinary } from "@/lib/cloudinary";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { UploadApiResponse } from "cloudinary";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -48,7 +48,10 @@ export const updateUser = async ({
     return { error: message };
   }
 
-  let uploadResult: UploadApiResponse | undefined = undefined;
+  const clerk = await clerkClient();
+
+  let uploadResult: UploadApiResponse | undefined;
+  let finalImageUrl: string | undefined;
 
   if (image && typeof image !== "string") {
     const imageArrayBuffer = await image.arrayBuffer();
@@ -57,30 +60,58 @@ export const updateUser = async ({
     uploadResult = await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         (error, result) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
-          }
+          if (error) reject(error);
+          else resolve(result);
         }
       );
-
       uploadStream.end(imageBuffer);
     });
+
+    finalImageUrl = uploadResult?.secure_url;
+
+    try {
+      await clerk.users.updateUserProfileImage(userId, { file: image });
+    } catch (err) {
+      console.error("Erro ao atualizar imagem no Clerk:", err);
+    }
+  } else if (typeof image === "string") {
+    finalImageUrl = image;
   }
 
-  await prisma.user.update({
-    where: { clerkId: userId },
-    data: {
-      bio,
-      name,
-      email,
+  try {
+    await prisma.user.update({
+      where: { clerkId: userId },
+      data: {
+        bio,
+        name,
+        email,
+        username,
+        clerkId: userId,
+        image: finalImageUrl,
+        private: isPrivate,
+      },
+    });
+
+    let firstName: string | undefined;
+    let lastName: string | undefined;
+
+    if (name) {
+      const nameParts = name.trim().split(" ");
+      firstName = nameParts[0];
+      lastName = nameParts.slice(1).join(" ") || undefined;
+    }
+
+    await clerk.users.updateUser(userId, {
+      firstName,
+      lastName,
       username,
-      clerkId: userId,
-      image: typeof image === "string" ? image : uploadResult?.secure_url,
-      private: isPrivate,
-    },
-  });
+    });
+  } catch (error) {
+    console.error("Erro ao atualizar no Prisma/Clerk:", error);
+    return { error: "Ocorreu um erro ao atualizar!" };
+  }
 
   revalidatePath("/settings");
+
+  return { success: "Usuário atualizado com sucesso!" };
 };

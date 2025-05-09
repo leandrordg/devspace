@@ -1,6 +1,7 @@
 "use client";
 
 import { createPost } from "@/actions/posts/create-post";
+import { LoadingButton } from "@/components/loading-button";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ImagesIcon, Loader2Icon, TrashIcon } from "lucide-react";
+import { ImagesIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -43,20 +44,43 @@ export function CreatePostForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const response = await createPost(values);
+    const { success, error } = await createPost(values);
 
-    if (response?.error) {
-      console.log("createPost error: ", response.error);
-      return toast.error("Ocorreu um erro", { description: response.error });
+    if (success) {
+      toast.success(success);
+      router.push("/");
+      return;
     }
 
-    router.push("/");
+    if (error) {
+      console.log("createPost error: ", error);
+      toast.error("Ocorreu um erro", { description: error });
+    }
   }
 
   const handleChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+
+    // in the future, we may use client-side image uploading, so we can upload larger images.
+    const MAX_FILE_SIZE = 1024 * 1024; // 1MB
+
     if (file) {
+      if (file.size > MAX_FILE_SIZE) {
+        form.setError("image", {
+          type: "manual",
+          message: "A imagem deve ter no máximo 1MB.",
+        });
+
+        setPreviewUrl(null);
+
+        if (fileInputRef.current) fileInputRef.current.value = "";
+
+        return;
+      }
+
+      form.clearErrors("image");
       form.setValue("image", file, { shouldDirty: true });
+
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
     } else {
@@ -78,7 +102,7 @@ export function CreatePostForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-6 bg-background p-4 md:p-6 rounded-xl border"
+        className="space-y-6 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl border"
       >
         <FormField
           control={form.control}
@@ -131,7 +155,7 @@ export function CreatePostForm() {
                     alt="Pré-visualização da imagem"
                     width={1920}
                     height={512}
-                    className="object-contain rounded-xl bg-background border max-h-[512px]"
+                    className="object-contain bg-muted/20 rounded-xl border max-h-[512px]"
                   />
                   <Button
                     type="button"
@@ -174,13 +198,13 @@ export function CreatePostForm() {
         />
 
         <div className="flex items-center justify-end">
-          <Button type="submit" disabled={isSubmitting || !isDirty}>
-            {isSubmitting ? (
-              <Loader2Icon className="animate-spin" />
-            ) : (
-              "Publicar agora"
-            )}
-          </Button>
+          <LoadingButton
+            type="submit"
+            text="Adicionar publicação"
+            loadingText="Adicionando..."
+            disabled={isSubmitting || !isDirty}
+            loading={isSubmitting}
+          />
         </div>
       </form>
     </Form>

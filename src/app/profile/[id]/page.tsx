@@ -18,7 +18,7 @@ export default async function ProfilePage({ params }: Props) {
 
   const user = await getProfileById(id);
 
-  if (!user) return notFound();
+  if (!user) notFound();
 
   const isOwner = userId === user.clerkId;
 
@@ -35,7 +35,7 @@ export default async function ProfilePage({ params }: Props) {
 
       <section
         key={user.id}
-        className="space-y-4 bg-background p-4 md:p-6 rounded-xl border"
+        className="space-y-4 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl border"
       >
         <div className="flex flex-col md:flex-row items-start gap-2 md:gap-4">
           <div className="relative size-12 md:size-24 rounded-full overflow-clip">
@@ -63,7 +63,7 @@ export default async function ProfilePage({ params }: Props) {
 
         {!isOwner ? (
           <div className="flex items-center gap-2">
-            <Button className="flex-1" variant="outline">
+            <Button className="flex-1" variant="blue">
               <UserRoundPlusIcon />
               <span className="hidden md:block">Seguir</span>
             </Button>
@@ -73,7 +73,7 @@ export default async function ProfilePage({ params }: Props) {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <Button className="flex-1" variant="outline" asChild>
+            <Button className="flex-1" variant="blue" asChild>
               <Link href="/settings/profile">
                 <UserRoundPlusIcon />
                 <span className="hidden md:block">Editar perfil</span>
