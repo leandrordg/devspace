@@ -1,6 +1,9 @@
-import { prisma } from "@/lib/prisma";
+"use server";
 
-export const getAllPosts = async () => {
+import { prisma } from "@/lib/prisma";
+import { cache } from "react";
+
+export const getAllPosts = cache(async () => {
   return await prisma.post.findMany({
     where: { private: false },
     include: {
@@ -10,4 +13,4 @@ export const getAllPosts = async () => {
     },
     orderBy: { createdAt: "desc" },
   });
-};
+});

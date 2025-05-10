@@ -6,16 +6,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  AlertTriangleIcon,
-  PencilIcon,
-  Share2Icon,
-  Trash2Icon,
-} from "lucide-react";
+import { AlertTriangleIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { Post } from "../../generated";
 
 interface Props {
@@ -31,16 +25,10 @@ export function PostMenuOptions({ asChild, children, post, isOwner }: Props) {
       <DropdownMenuTrigger className="ml-auto" asChild={asChild}>
         {children}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Ações</DropdownMenuLabel>
-        <DropdownMenuSeparator />
+      <DropdownMenuContent side="left" align="end">
         <DropdownMenuItem>
           <AlertTriangleIcon />
           Denunciar
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Share2Icon />
-          Compartilhar
         </DropdownMenuItem>
         {isOwner && (
           <>

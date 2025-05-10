@@ -1,8 +1,5 @@
 import { CreatePostCard } from "@/components/create-post-card";
 import { ProfileFeed } from "@/components/feeds/profile-feed";
-import { FollowButton } from "@/components/follow-button";
-import { InfoCard } from "@/components/info-card";
-import { MessageButton } from "@/components/message-button";
 import { FollowersSheet } from "@/components/sheets/followers-sheet";
 import { FollowingSheet } from "@/components/sheets/following-sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -12,42 +9,21 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { getProfileById } from "@/hooks/profiles/get-profile-by-id";
-import { auth } from "@clerk/nextjs/server";
+import { getMyProfile } from "@/hooks/profiles/get-my-profile";
 import { GlobeLockIcon, PencilIcon } from "lucide-react";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
-interface Props {
-  params: Promise<{ id: string }>;
-}
-
-export default async function ProfilePage({ params }: Props) {
-  const { id } = await params;
-  const { userId } = await auth();
-
-  if (userId === id) redirect("/profile");
-
-  const user = await getProfileById(id);
+export default async function MyProfilePage() {
+  const user = await getMyProfile();
 
   if (!user) notFound();
-
-  const isOwner = userId === user.clerkId;
 
   const userInitials = user.name
     .split(" ")
     .filter(Boolean)
     .map((word) => word[0].toUpperCase())
     .join("");
-
-  const isFollowing = user.followers.some(
-    (follower) =>
-      follower.followerId === userId && follower.followingId === user.clerkId
-  );
-
-  const isFollowingRequest = user.followRequestsReceived.some(
-    (request) => request.requesterId === userId
-  );
 
   return (
     <main className="max-w-2xl mx-auto space-y-4 py-4">
@@ -117,42 +93,20 @@ export default async function ProfilePage({ params }: Props) {
           </FollowingSheet>
         </div>
 
-        {!isOwner ? (
-          <div className="flex items-center gap-2">
-            <FollowButton
-              user={user}
-              isFollowing={isFollowing}
-              isFollowingRequest={isFollowingRequest}
-            />
-            <MessageButton />
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <Button className="flex-1" variant="cyan" asChild>
-              <Link href="/profile/settings">
-                <PencilIcon />
-                Editar perfil
-              </Link>
-            </Button>
-          </div>
-        )}
+        <Button className="w-full" variant="cyan" asChild>
+          <Link href="/profile/settings">
+            <PencilIcon />
+            Editar perfil
+          </Link>
+        </Button>
       </section>
 
-      {isOwner && (
-        <CreatePostCard
-          text="Adicionar uma publicação"
-          description="Interaja com os seus seguidores"
-        />
-      )}
+      <CreatePostCard
+        text="Adicionar uma publicação"
+        description="Interaja com os seus seguidores"
+      />
 
-      {!user.private || isOwner || isFollowing ? (
-        <ProfileFeed id={user.clerkId} />
-      ) : (
-        <InfoCard
-          text="Perfil privado"
-          description="Siga esse usuário para ver as publicações"
-        />
-      )}
+      <ProfileFeed id={user.clerkId} />
     </main>
   );
 }

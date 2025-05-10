@@ -59,14 +59,13 @@ export async function PostCard({
     (request) => request.requesterId === userId
   );
 
+  const profileUrl = isOwner ? "/profile" : `/profile/${author.clerkId}`;
+
   return (
-    <div
-      key={post.id}
-      className="rounded-xl bg-background dark:bg-muted/30 p-4 space-y-2 border"
-    >
+    <div className="rounded-xl bg-background dark:bg-muted/30 p-4 space-y-2 border">
       <div className="flex items-center gap-3">
         <Button size="icon" variant="ghost" asChild>
-          <Link href={`/profile/${author.clerkId}`}>
+          <Link href={profileUrl}>
             <Avatar className="size-8">
               <AvatarImage src={author.image} />
               <AvatarFallback>{authorInitials}</AvatarFallback>
@@ -75,7 +74,7 @@ export async function PostCard({
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <Link href={`/profile/${author.clerkId}`}>
+            <Link href={profileUrl}>
               <p>{author.username}</p>
             </Link>
 
@@ -116,7 +115,7 @@ export async function PostCard({
         <div className="relative flex justify-center dark:bg-muted/30 rounded-xl overflow-clip max-h-152 min-h-[300px]">
           <Image
             src={post.image}
-            alt={post.id}
+            alt=""
             aria-hidden="true"
             className="blur-2xl"
             fill
@@ -128,7 +127,7 @@ export async function PostCard({
             width={1920}
             height={1920}
             sizes="(max-width: 768px) 100vw, 700px"
-            className="aspect-auto object-contain z-10"
+            className="object-contain h-auto w-full z-10"
             priority
           />
         </div>

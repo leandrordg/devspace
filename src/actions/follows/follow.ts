@@ -49,6 +49,17 @@ export async function followUser(id: string) {
       },
     });
 
+    const sender = await prisma.user.findUnique({ where: { clerkId: userId } });
+
+    await prisma.notification.create({
+      data: {
+        type: "FOLLOW_REQUEST",
+        message: `${sender?.username} enviou uma solicitação para seguir você.`,
+        recipientId: userExists.clerkId,
+        senderId: userId,
+      },
+    });
+
     revalidatePath("/");
 
     return { success: "Solicitação enviada com sucesso" };

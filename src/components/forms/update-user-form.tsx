@@ -123,7 +123,7 @@ export function UpdateUserForm({ user }: Props) {
             <AvatarFallback>{userInitials}</AvatarFallback>
           </Avatar>
 
-          <div>
+          <div className="space-y-1">
             <p className="text-muted-foreground">{form.watch("username")}</p>
 
             <div className="flex items-center gap-2 flex-wrap">

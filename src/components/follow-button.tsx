@@ -3,8 +3,18 @@
 import { followUser } from "@/actions/follows/follow";
 import { unfollowUser } from "@/actions/follows/unfollow";
 import { LoadingButton } from "@/components/loading-button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { CheckIcon, ClockIcon, UserPlusIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { User } from "../../generated";
 
@@ -15,20 +25,34 @@ interface Props {
 }
 
 export function FollowButton({ user, isFollowing, isFollowingRequest }: Props) {
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [dialogOpen, setDialogOpen] = useState(false);
 
-  const handleClick = async () => {
-    setLoading(true);
-
-    try {
-      const action =
-        isFollowing || isFollowingRequest ? unfollowUser : followUser;
-      const { success, error } = await action(user.id);
-
+  const handleFollow = () => {
+    startTransition(async () => {
+      const { success, error } = await followUser(user.id);
       if (success) toast.success(success);
       if (error) toast.error(error);
-    } finally {
-      setLoading(false);
+    });
+  };
+
+  const handleUnfollow = () => {
+    startTransition(async () => {
+      const { success, error } = await unfollowUser(user.id);
+      if (success) toast.success(success);
+      if (error) toast.error(error);
+    });
+  };
+
+  const handleClick = () => {
+    if ((isFollowing || isFollowingRequest) && user.private) {
+      setDialogOpen(true);
+    } else {
+      if (isFollowing || isFollowingRequest) {
+        handleUnfollow();
+      } else {
+        handleFollow();
+      }
     }
   };
 
@@ -38,12 +62,6 @@ export function FollowButton({ user, isFollowing, isFollowingRequest }: Props) {
     return "Seguir";
   };
 
-  const getLoadingText = () => {
-    if (isFollowing) return "Deixando de seguir...";
-    if (isFollowingRequest) return "Cancelando solicitação...";
-    return "Seguindo...";
-  };
-
   const getIcons = () => {
     if (isFollowing) return CheckIcon;
     if (isFollowingRequest) return ClockIcon;
@@ -51,15 +69,42 @@ export function FollowButton({ user, isFollowing, isFollowingRequest }: Props) {
   };
 
   return (
-    <LoadingButton
-      className="flex-1"
-      variant={isFollowing ? "outline" : "cyan"}
-      loading={loading}
-      disabled={loading}
-      icon={getIcons()}
-      text={getButtonText()}
-      loadingText={getLoadingText()}
-      onClick={handleClick}
-    />
+    <>
+      <LoadingButton
+        className="flex-1"
+        variant={isFollowing ? "outline" : "cyan"}
+        loading={isPending}
+        disabled={isPending}
+        icon={getIcons()}
+        text={getButtonText()}
+        loadingText="Carregando..."
+        onClick={handleClick}
+      />
+
+      <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Deixar de seguir {user.username}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Este é um perfil privado. Se você deixar de seguir, precisará
+              enviar uma nova solicitação para segui-lo novamente.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setDialogOpen(false);
+                handleUnfollow();
+              }}
+            >
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

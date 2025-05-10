@@ -8,9 +8,9 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Like, Post } from "../../../generated";
 import { HeartIcon } from "lucide-react";
 import { useState } from "react";
+import { Like, Post } from "../../../generated";
 
 interface Props {
   post: Post;

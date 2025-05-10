@@ -1,7 +1,10 @@
+"use server";
+
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { cache } from "react";
 
-export const getAllPostsByProfile = async (authorId: string) => {
+export const getAllPostsByProfile = cache(async (authorId: string) => {
   const { userId } = await auth();
 
   const privatePost = userId !== authorId ? false : undefined;
@@ -15,4 +18,4 @@ export const getAllPostsByProfile = async (authorId: string) => {
     },
     orderBy: { createdAt: "desc" },
   });
-};
+});

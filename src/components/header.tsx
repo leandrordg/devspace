@@ -1,4 +1,5 @@
-import { UserMenuSheet } from "@/components/sheets/user-menu-sheet";
+import { Notifications } from "@/components/notifications";
+import { MobileMenu } from "@/components/sheets/mobile-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,17 +15,15 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-3xl border-b h-16">
       <div className="flex items-center h-full gap-4 justify-between max-w-7xl mx-auto p-4 md:px-6">
-        <h1 className="font-medium">
-          <Link href="/">
-            <Image
-              src="/logo-dark.svg"
-              alt="devspace"
-              width={80}
-              height={80}
-              className="dark:invert"
-            />
-          </Link>
-        </h1>
+        <Link href="/">
+          <Image
+            src="/logo-dark.svg"
+            alt="devspace"
+            width={80}
+            height={80}
+            className="dark:invert"
+          />
+        </Link>
 
         <div className="flex items-center gap-4">
           <Tooltip>
@@ -38,8 +37,9 @@ export function Header() {
             <TooltipContent>Adicionar uma publicação</TooltipContent>
           </Tooltip>
 
+          <Notifications />
           <ThemeToggle />
-          <UserMenuSheet />
+          <MobileMenu />
         </div>
       </div>
     </header>
