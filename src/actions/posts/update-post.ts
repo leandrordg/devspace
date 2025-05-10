@@ -7,14 +7,14 @@ import { z } from "zod";
 
 const schema = z.object({
   id: z.string(),
-  content: z.string().nullable(),
-  published: z.boolean(),
+  content: z.string().nonempty(),
+  private: z.boolean(),
 });
 
 export async function updatePost({
   id,
   content,
-  published,
+  private: privatePost,
 }: z.infer<typeof schema>) {
   const { userId } = await auth();
 
@@ -29,7 +29,10 @@ export async function updatePost({
       return { error: "Você não tem permissão para editar esta publicação" };
     }
 
-    await prisma.post.update({ where: { id }, data: { content, published } });
+    await prisma.post.update({
+      where: { id },
+      data: { content, private: privatePost },
+    });
   } catch {
     console.error("Erro ao atualizar a publicação");
     return { error: "Erro ao atualizar a publicação" };

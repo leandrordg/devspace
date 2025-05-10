@@ -33,10 +33,10 @@ model Post {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  content   String?
-  image     String?
-  authorId  String
-  published Boolean @default(false)
+  content  String?
+  image    String?
+  authorId String
+  private  Boolean @default(false)
 
   author   User      @relation(fields: [authorId], references: [clerkId], onDelete: Cascade)
   comments Comment[]

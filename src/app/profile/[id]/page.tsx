@@ -1,3 +1,5 @@
+import { CreatePostCard } from "@/components/create-post-card";
+import { InfoCard } from "@/components/info-card";
 import { ProfileFeed } from "@/components/profile-feed";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -36,6 +38,10 @@ export default async function ProfilePage({ params }: Props) {
     .filter(Boolean)
     .map((word) => word[0].toUpperCase())
     .join("");
+
+  const isFollowing = user.followers.some(
+    (follower) => follower.followerId === userId
+  );
 
   return (
     <main className="max-w-2xl mx-auto space-y-4 py-4">
@@ -97,7 +103,21 @@ export default async function ProfilePage({ params }: Props) {
         )}
       </section>
 
-      <ProfileFeed id={id} />
+      {isOwner && (
+        <CreatePostCard
+          text="Adicionar uma publicação"
+          description="Interaja com os seus seguidores"
+        />
+      )}
+
+      {!user.private || isOwner || isFollowing ? (
+        <ProfileFeed id={user.clerkId} />
+      ) : (
+        <InfoCard
+          text="Perfil privado"
+          description="Siga esse usuário para ver as publicações"
+        />
+      )}
     </main>
   );
 }

@@ -13,18 +13,24 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Post } from "../../../generated";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Post } from "../../../generated";
 
-const formSchema = z.object({
-  id: z.string(),
-  content: z.string().nullable(),
-  published: z.boolean(),
-});
+const formSchema = z
+  .object({
+    id: z.string(),
+    content: z.string().trim(),
+    image: z.string().optional(),
+    private: z.boolean(),
+  })
+  .refine((data) => data.content !== "" || !!data.image, {
+    message: "O conteúdo da publicação é obrigatório se não houver imagem.",
+    path: ["content"],
+  });
 
 interface Props {
   asChild?: boolean;
@@ -37,8 +43,9 @@ export function UpdatePostForm({ post, asChild, setOpen }: Props) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       id: post.id,
-      content: post.content,
-      published: post.published,
+      content: post.content ?? "",
+      image: post.image ?? "",
+      private: post.private,
     },
   });
 
@@ -89,7 +96,7 @@ export function UpdatePostForm({ post, asChild, setOpen }: Props) {
 
         <FormField
           control={form.control}
-          name="published"
+          name="private"
           render={({ field }) => (
             <FormItem className="flex items-start gap-4">
               <FormControl>
@@ -101,10 +108,9 @@ export function UpdatePostForm({ post, asChild, setOpen }: Props) {
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>Publicação visível para todos os usuários</FormLabel>
+                <FormLabel>Publicação privada</FormLabel>
                 <FormDescription>
-                  Se não estiver marcado, a publicação será visível apenas para
-                  você.
+                  Se ativado, apenas você poderá ver essa publicação.
                 </FormDescription>
               </div>
             </FormItem>

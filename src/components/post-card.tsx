@@ -8,12 +8,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Comment, Like, Post, User } from "../../generated";
 import { formatDate } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
 import { EllipsisIcon, GlobeLockIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Comment, Like, Post, User } from "../../generated";
 
 interface Props {
   post: Post;
@@ -57,7 +57,7 @@ export async function PostCard({ post, author, comments, likes }: Props) {
               </p>
             ) : (
               <div>
-                {!post.published && (
+                {post.private && (
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <GlobeLockIcon className="size-4 text-cyan-600" />

@@ -26,13 +26,21 @@ import { z } from "zod";
 
 const formSchema = z
   .object({
-    content: z.string().optional(),
+    content: z.string().trim().optional(),
     image: z.instanceof(File).optional(),
-    published: z.boolean(),
+    private: z.boolean(),
   })
-  .refine((data) => data.content || data.image, {
-    message: "A publicação precisa ter pelo menos conteúdo ou imagem.",
-  });
+  .refine(
+    (data) => {
+      const hasContent = (data.content?.length ?? 0) > 0;
+      const hasImage = !!data.image;
+      return hasContent || hasImage;
+    },
+    {
+      message: "A publicação precisa ter pelo menos conteúdo ou imagem.",
+      path: ["content", "image"],
+    }
+  );
 
 export function CreatePostForm() {
   const router = useRouter();
@@ -44,7 +52,7 @@ export function CreatePostForm() {
     defaultValues: {
       content: "",
       image: undefined,
-      published: false,
+      private: false,
     },
   });
 
@@ -53,7 +61,7 @@ export function CreatePostForm() {
 
     if (success) {
       toast.success(success);
-      router.push("/");
+      router.back();
     }
 
     if (error) toast.error(error);
@@ -188,7 +196,7 @@ export function CreatePostForm() {
 
         <FormField
           control={form.control}
-          name="published"
+          name="private"
           render={({ field }) => (
             <FormItem className="flex items-start gap-4">
               <FormControl>
@@ -200,10 +208,9 @@ export function CreatePostForm() {
                 />
               </FormControl>
               <div className="space-y-1 leading-none">
-                <FormLabel>Publicação visível para todos os usuários</FormLabel>
+                <FormLabel>Publicação privada</FormLabel>
                 <FormDescription>
-                  Se não estiver marcado, a publicação será visível apenas para
-                  você.
+                  Se ativado, apenas você poderá ver essa publicação.
                 </FormDescription>
               </div>
             </FormItem>

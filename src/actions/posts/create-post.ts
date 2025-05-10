@@ -10,12 +10,12 @@ import { z } from "zod";
 const schema = z.object({
   content: z.string().optional(),
   image: z.instanceof(File).optional(),
-  published: z.boolean(),
+  private: z.boolean(),
 });
 
 export const createPost = async ({
   content,
-  published,
+  private: privatePost,
   image,
 }: z.infer<typeof schema>) => {
   const { userId } = await auth();
@@ -52,7 +52,7 @@ export const createPost = async ({
   await prisma.post.create({
     data: {
       content,
-      published,
+      private: privatePost,
       authorId: userId,
       image: uploadResult?.secure_url,
     },

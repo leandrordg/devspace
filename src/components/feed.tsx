@@ -1,18 +1,13 @@
+import { InfoCard } from "@/components/info-card";
 import { PostCard } from "@/components/post-card";
 import { getAllPosts } from "@/hooks/posts/get-all-posts";
-import { InfoIcon } from "lucide-react";
 
 export async function Feed() {
   const posts = await getAllPosts();
 
   return (
     <section className="grid grid-cols-1 gap-4">
-      {!posts.length && (
-        <div className="bg-muted/50 p-4 rounded-xl flex items-center flex-wrap gap-2">
-          <InfoIcon className="size-4 text-muted-foreground" />
-          <p className="text-sm">Nenhuma publicação encontrada</p>
-        </div>
-      )}
+      {!posts.length && <InfoCard text="Não há publicações disponíveis" />}
 
       {posts.map((post) => (
         <PostCard
