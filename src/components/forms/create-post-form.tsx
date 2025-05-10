@@ -14,6 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ImagesIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
@@ -23,11 +24,15 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
-const formSchema = z.object({
-  content: z.string().min(1, { message: "Campo obrigatório" }),
-  image: z.instanceof(File).optional(),
-  published: z.boolean(),
-});
+const formSchema = z
+  .object({
+    content: z.string().optional(),
+    image: z.instanceof(File).optional(),
+    published: z.boolean(),
+  })
+  .refine((data) => data.content || data.image, {
+    message: "A publicação precisa ter pelo menos conteúdo ou imagem.",
+  });
 
 export function CreatePostForm() {
   const router = useRouter();
@@ -49,13 +54,9 @@ export function CreatePostForm() {
     if (success) {
       toast.success(success);
       router.push("/");
-      return;
     }
 
-    if (error) {
-      console.log("createPost error: ", error);
-      toast.error("Ocorreu um erro", { description: error });
-    }
+    if (error) toast.error(error);
   }
 
   const handleChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,10 +67,7 @@ export function CreatePostForm() {
 
     if (file) {
       if (file.size > MAX_FILE_SIZE) {
-        form.setError("image", {
-          type: "manual",
-          message: "A imagem deve ter no máximo 1MB.",
-        });
+        form.setError("image", { message: "A imagem deve ter no máximo 1MB." });
 
         setPreviewUrl(null);
 
@@ -79,7 +77,7 @@ export function CreatePostForm() {
       }
 
       form.clearErrors("image");
-      form.setValue("image", file, { shouldDirty: true });
+      form.setValue("image", file, { shouldDirty: true, shouldValidate: true });
 
       const url = URL.createObjectURL(file);
       setPreviewUrl(url);
@@ -90,13 +88,16 @@ export function CreatePostForm() {
 
   const handleRemoveImage = () => {
     setPreviewUrl(null);
-    form.setValue("image", undefined, { shouldDirty: true });
+    form.setValue("image", undefined, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
   };
 
-  const { isSubmitting, isDirty } = form.formState;
+  const { isSubmitting, isValid, isDirty } = form.formState;
 
   return (
     <Form {...form}>
@@ -143,25 +144,37 @@ export function CreatePostForm() {
               <Button
                 type="button"
                 disabled={isSubmitting}
+                className={cn(previewUrl && "hidden")}
                 onClick={() => fileInputRef.current?.click()}
               >
                 <ImagesIcon /> Adicionar imagem
               </Button>
 
               {previewUrl && (
-                <div className="relative mt-4 w-fit">
-                  <Image
-                    src={previewUrl}
-                    alt="Pré-visualização da imagem"
-                    width={1920}
-                    height={512}
-                    className="object-contain bg-muted/20 rounded-xl border max-h-[512px]"
-                  />
+                <div className="relative w-fit">
+                  <div className="relative flex justify-center dark:bg-muted/30 rounded-xl overflow-clip max-h-152 min-h-[300px]">
+                    <Image
+                      src={previewUrl}
+                      alt="background"
+                      aria-hidden="true"
+                      className="blur-2xl"
+                      fill
+                    />
+                    <Image
+                      src={previewUrl}
+                      alt="Imagem do post"
+                      width={1920}
+                      height={1920}
+                      sizes="(max-width: 768px) 100vw, 700px"
+                      className="aspect-auto object-contain z-10"
+                      priority
+                    />
+                  </div>
                   <Button
                     type="button"
                     onClick={handleRemoveImage}
                     disabled={isSubmitting}
-                    className="absolute top-2 right-2"
+                    className="absolute top-2 right-2 z-20"
                   >
                     <TrashIcon />
                   </Button>
@@ -200,9 +213,10 @@ export function CreatePostForm() {
         <div className="flex items-center justify-end">
           <LoadingButton
             type="submit"
+            variant="cyan"
             text="Adicionar publicação"
             loadingText="Adicionando..."
-            disabled={isSubmitting || !isDirty}
+            disabled={isSubmitting || !isValid || !isDirty}
             loading={isSubmitting}
           />
         </div>

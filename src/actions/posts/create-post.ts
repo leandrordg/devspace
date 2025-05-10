@@ -2,13 +2,13 @@
 
 import { cloudinary } from "@/lib/cloudinary";
 import { prisma } from "@/lib/prisma";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { UploadApiResponse } from "cloudinary";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 const schema = z.object({
-  content: z.string(),
+  content: z.string().optional(),
   image: z.instanceof(File).optional(),
   published: z.boolean(),
 });
@@ -18,12 +18,12 @@ export const createPost = async ({
   published,
   image,
 }: z.infer<typeof schema>) => {
-  const user = await currentUser();
+  const { userId } = await auth();
 
-  if (!user || !user.id) return { error: "Usuário não autenticado" };
+  if (!userId) return { error: "Usuário não autenticado" };
 
   const userExists = await prisma.user.findUnique({
-    where: { clerkId: user.id },
+    where: { clerkId: userId },
   });
 
   if (!userExists) return { error: "Usuário não existe" };
@@ -53,12 +53,12 @@ export const createPost = async ({
     data: {
       content,
       published,
-      authorId: user.id,
+      authorId: userId,
       image: uploadResult?.secure_url,
     },
   });
 
-  revalidatePath("/posts");
+  revalidatePath("/posts/create");
 
   return { success: "Publicação adicionada com sucesso!" };
 };

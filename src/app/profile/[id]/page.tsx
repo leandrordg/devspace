@@ -1,10 +1,19 @@
 import { ProfileFeed } from "@/components/profile-feed";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { getProfileById } from "@/hooks/profiles/get-profile-by-id";
-import { formatDate } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
-import { ChevronLeftIcon, SendIcon, UserRoundPlusIcon } from "lucide-react";
+import {
+  GlobeLockIcon,
+  PencilIcon,
+  SendIcon,
+  UserRoundPlusIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -29,22 +38,13 @@ export default async function ProfilePage({ params }: Props) {
     .join("");
 
   return (
-    <main className="max-w-2xl mx-auto space-y-8 py-8">
-      <div className="px-4 md:px-0">
-        <Button variant="outline" className="w-full" asChild>
-          <Link href="/">
-            <ChevronLeftIcon />
-            Voltar ao início
-          </Link>
-        </Button>
-      </div>
-
+    <main className="max-w-2xl mx-auto space-y-4 py-4">
       <section
         key={user.id}
-        className="space-y-4 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl border"
+        className="space-y-4 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl md:border"
       >
-        <div className="flex flex-col md:flex-row items-start gap-2 md:gap-4">
-          <Avatar className="size-12 md:size-24">
+        <div className="flex items-start gap-4">
+          <Avatar className="size-14 md:size-24">
             <AvatarImage src={user.image} />
             <AvatarFallback>{userInitials}</AvatarFallback>
           </Avatar>
@@ -52,21 +52,32 @@ export default async function ProfilePage({ params }: Props) {
           <div>
             <p className="text-muted-foreground">{user.username}</p>
 
-            <h1 className="text-2xl tracking-tight">{user.name}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl tracking-tight">{user.name}</h1>
 
-            <p className="text-xs text-muted-foreground">
-              Entrou em: {formatDate(user.createdAt)}
-            </p>
+              {user.private && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <GlobeLockIcon className="size-4 text-cyan-600" />
+                  </TooltipTrigger>
+                  <TooltipContent>Perfil privado</TooltipContent>
+                </Tooltip>
+              )}
+            </div>
 
-            <p className="mt-4 text-sm text-muted-foreground">
+            <p className="hidden md:block text-sm text-muted-foreground">
               {user.bio ?? "Esse usuário não possui uma biografia."}
             </p>
           </div>
         </div>
 
+        <p className="md:hidden text-sm text-muted-foreground">
+          {user.bio ?? "Esse usuário não possui uma biografia."}
+        </p>
+
         {!isOwner ? (
           <div className="flex items-center gap-2">
-            <Button className="flex-1" variant="blue">
+            <Button className="flex-1" variant="cyan">
               <UserRoundPlusIcon />
               <span className="hidden md:block">Seguir</span>
             </Button>
@@ -76,10 +87,10 @@ export default async function ProfilePage({ params }: Props) {
           </div>
         ) : (
           <div className="flex items-center gap-2">
-            <Button className="flex-1" variant="blue" asChild>
-              <Link href="/settings/profile">
-                <UserRoundPlusIcon />
-                <span className="hidden md:block">Editar perfil</span>
+            <Button className="flex-1" variant="cyan" asChild>
+              <Link href="/profile/settings">
+                <PencilIcon />
+                Editar perfil
               </Link>
             </Button>
           </div>

@@ -28,24 +28,37 @@ export const updateUser = async ({
 
   if (!userId) return { error: "Usuário não autenticado" };
 
-  const verifyUserAlreadyExists = await prisma.user.findUnique({
-    where: { clerkId: userId },
-  });
+  // verify if the user already exists
+  try {
+    const verifyUserAlreadyExists = await prisma.user.findUnique({
+      where: { clerkId: userId },
+    });
 
-  if (!verifyUserAlreadyExists)
-    return { error: "Você não possui uma conta ativa" };
+    if (!verifyUserAlreadyExists) {
+      return { error: "Você não possui uma conta ativa" };
+    }
+  } catch {
+    console.error("Erro ao verificar se o usuário existe");
+    return { error: "Ocorreu um erro ao verificar o usuário" };
+  }
 
-  const userWithEmailOrUsernameExists = await prisma.user.findFirst({
-    where: { NOT: { clerkId: userId }, OR: [{ email }, { username }] },
-  });
+  // verify if the email or username already exists by other user
+  try {
+    const userWithEmailOrUsernameExists = await prisma.user.findFirst({
+      where: { NOT: { clerkId: userId }, OR: [{ email }, { username }] },
+    });
 
-  if (userWithEmailOrUsernameExists) {
-    const message =
-      userWithEmailOrUsernameExists.email === email
-        ? "Email já cadastrado"
-        : "Nome de usuário já cadastrado";
+    if (userWithEmailOrUsernameExists) {
+      const message =
+        userWithEmailOrUsernameExists.email === email
+          ? "Email já cadastrado"
+          : "Nome de usuário já cadastrado";
 
-    return { error: message };
+      return { error: message };
+    }
+  } catch {
+    console.error("Erro ao verificar se o email ou nome de usuário já existe");
+    return { error: "Ocorreu um erro ao verificar o email ou nome de usuário" };
   }
 
   const clerk = await clerkClient();
@@ -69,11 +82,7 @@ export const updateUser = async ({
 
     finalImageUrl = uploadResult?.secure_url;
 
-    try {
-      await clerk.users.updateUserProfileImage(userId, { file: image });
-    } catch (err) {
-      console.error("Erro ao atualizar imagem no Clerk:", err);
-    }
+    await clerk.users.updateUserProfileImage(userId, { file: image });
   } else if (typeof image === "string") {
     finalImageUrl = image;
   }

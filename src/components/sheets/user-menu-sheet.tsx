@@ -56,10 +56,12 @@ export async function UserMenuSheet() {
       <Tooltip>
         <TooltipTrigger asChild>
           <SheetTrigger asChild>
-            <Avatar>
-              <AvatarImage src={user.imageUrl} />
-              <AvatarFallback>{userInitials}</AvatarFallback>
-            </Avatar>
+            <Button size="icon" variant="ghost">
+              <Avatar>
+                <AvatarImage src={user.imageUrl} />
+                <AvatarFallback>{userInitials}</AvatarFallback>
+              </Avatar>
+            </Button>
           </SheetTrigger>
         </TooltipTrigger>
         <TooltipContent>Você</TooltipContent>
@@ -79,7 +81,7 @@ export async function UserMenuSheet() {
             <AvatarImage src={user.imageUrl} />
             <AvatarFallback>{userInitials}</AvatarFallback>
           </Avatar>
-          
+
           <div>
             <div className="flex items-center gap-2">
               <p>{user.username}</p>

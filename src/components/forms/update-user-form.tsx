@@ -2,6 +2,7 @@
 
 import { updateUser } from "@/actions/users/update-user";
 import { LoadingButton } from "@/components/loading-button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -20,21 +21,20 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { formatDate } from "@/lib/utils";
+import { User } from "../../../generated";
+import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { GlobeIcon, GlobeLockIcon, ImagesIcon, TrashIcon } from "lucide-react";
+import { GlobeLockIcon, ImagesIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { User } from "../../../generated";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const formSchema = z.object({
-  name: z.string().min(1).optional(),
-  email: z.string().email("Email inválido").min(1).optional(),
-  username: z.string().min(1).optional(),
+  name: z.string().nonempty().optional(),
+  email: z.string().email("Email inválido").nonempty().optional(),
+  username: z.string().nonempty().optional(),
   image: z.union([z.instanceof(File), z.string()]).optional(),
   bio: z.string().optional(),
   private: z.boolean(),
@@ -68,11 +68,7 @@ export function UpdateUserForm({ user }: Props) {
       toast.success(success);
     }
 
-    if (error) {
-      console.log(error);
-      form.setError("root", { message: error });
-      toast.error(error);
-    }
+    if (error) toast.error(error);
   }
 
   const handleChangeImage = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -83,10 +79,7 @@ export function UpdateUserForm({ user }: Props) {
 
     if (file) {
       if (file.size > MAX_FILE_SIZE) {
-        form.setError("image", {
-          type: "manual",
-          message: "A imagem deve ter no máximo 1MB.",
-        });
+        form.setError("image", { message: "A imagem deve ter no máximo 1MB." });
 
         setPreviewUrl(null);
 
@@ -122,7 +115,7 @@ export function UpdateUserForm({ user }: Props) {
     .join("");
 
   return (
-    <section className="space-y-8">
+    <section className="space-y-4">
       <div className="space-y-6 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl border">
         <div className="flex flex-col md:flex-row items-start gap-2 md:gap-4">
           <Avatar className="size-12 md:size-24">
@@ -131,33 +124,22 @@ export function UpdateUserForm({ user }: Props) {
           </Avatar>
 
           <div>
-            <p className="text-muted-foreground">{userInitials}</p>
+            <p className="text-muted-foreground">{form.watch("username")}</p>
 
-            <h1 className="text-2xl tracking-tight">{form.watch("name")}</h1>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl tracking-tight">{form.watch("name")}</h1>
 
-            <div className="flex items-center gap-2">
-              <p className="text-xs text-muted-foreground">
-                Entrou em: {formatDate(new Date())}
-              </p>
-
-              {form.watch("private") ? (
+              {form.watch("private") && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <GlobeLockIcon className="size-4 text-muted-foreground" />
+                    <GlobeLockIcon className="size-4 text-cyan-600" />
                   </TooltipTrigger>
                   <TooltipContent>Perfil privado</TooltipContent>
-                </Tooltip>
-              ) : (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <GlobeIcon className="size-4 text-muted-foreground" />
-                  </TooltipTrigger>
-                  <TooltipContent>Perfil público</TooltipContent>
                 </Tooltip>
               )}
             </div>
 
-            <p className="mt-2 text-sm text-muted-foreground break-all line-clamp-3">
+            <p className="text-sm text-muted-foreground break-all line-clamp-3">
               {form.watch("bio") ?? "Esse usuário não possui uma biografia."}
             </p>
           </div>
@@ -246,25 +228,37 @@ export function UpdateUserForm({ user }: Props) {
                 <Button
                   type="button"
                   disabled={isSubmitting}
+                  className={cn(previewUrl && "hidden")}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <ImagesIcon /> Adicionar imagem
                 </Button>
 
                 {previewUrl && (
-                  <div className="relative mt-4 w-fit">
-                    <Image
-                      src={previewUrl}
-                      alt="Pré-visualização da imagem"
-                      width={1920}
-                      height={512}
-                      className="object-contain rounded-xl bg-background border max-h-[512px]"
-                    />
+                  <div className="relative w-fit">
+                    <div className="relative flex justify-center dark:bg-muted/30 rounded-xl overflow-clip max-h-152 min-h-[300px]">
+                      <Image
+                        src={previewUrl}
+                        alt="background"
+                        aria-hidden="true"
+                        className="blur-2xl"
+                        fill
+                      />
+                      <Image
+                        src={previewUrl}
+                        alt="Imagem do post"
+                        width={1920}
+                        height={1920}
+                        sizes="(max-width: 768px) 100vw, 700px"
+                        className="aspect-auto object-contain z-10"
+                        priority
+                      />
+                    </div>
                     <Button
                       type="button"
                       onClick={handleRemoveImage}
                       disabled={isSubmitting}
-                      className="absolute top-2 right-2"
+                      className="absolute top-2 right-2 z-20"
                     >
                       <TrashIcon />
                     </Button>

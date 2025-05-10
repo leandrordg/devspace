@@ -1,23 +1,19 @@
-import { PostCommentsSheet } from "@/components/sheets/post-comments-sheet";
-import { PostLikesSheet } from "@/components/sheets/post-likes-sheet";
+import { PostMenuOptions } from "@/components/post-menu-options";
+import { PostCommentsButtonSheet } from "@/components/sheets/post-comments-button-sheet";
+import { PostLikesButtonSheet } from "@/components/sheets/post-likes-button-sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Comment, Like, Post, User } from "../../generated";
 import { formatDate } from "@/lib/utils";
 import { auth } from "@clerk/nextjs/server";
-import {
-  GlobeIcon,
-  GlobeLockIcon,
-  HeartIcon,
-  MessageCircleIcon,
-} from "lucide-react";
+import { EllipsisIcon, GlobeLockIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Comment, Like, Post, User } from "../../generated";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface Props {
   post: Post;
@@ -31,16 +27,22 @@ export async function PostCard({ post, author, comments, likes }: Props) {
 
   const isOwner = userId === author.clerkId;
 
+  const authorInitials = author.name
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0].toUpperCase())
+    .join("");
+
   return (
     <div
       key={post.id}
-      className="space-y-4 bg-background dark:bg-muted/30 p-4 md:p-6 rounded-xl border"
+      className="rounded-xl bg-background dark:bg-muted/30 p-4 space-y-2 border"
     >
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         <Link href={`/profile/${author.clerkId}`}>
           <Avatar className="size-8">
             <AvatarImage src={author.image} />
-            <AvatarFallback>{author.name[0] + author.name[1]}</AvatarFallback>
+            <AvatarFallback>{authorInitials}</AvatarFallback>
           </Avatar>
         </Link>
         <div>
@@ -48,28 +50,22 @@ export async function PostCard({ post, author, comments, likes }: Props) {
             <Link href={`/profile/${author.clerkId}`}>
               <p>{author.username}</p>
             </Link>
+
             {!isOwner ? (
-              <p className="text-emerald-600">
+              <p className="text-cyan-600">
                 <button type="button">seguir</button>
               </p>
             ) : (
-              <p className="text-muted-foreground">
-                {post.published ? (
+              <div>
+                {!post.published && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <GlobeIcon className="size-4" />
-                    </TooltipTrigger>
-                    <TooltipContent>Pública</TooltipContent>
-                  </Tooltip>
-                ) : (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <GlobeLockIcon className="size-4" />
+                      <GlobeLockIcon className="size-4 text-cyan-600" />
                     </TooltipTrigger>
                     <TooltipContent>Somente você</TooltipContent>
                   </Tooltip>
                 )}
-              </p>
+              </div>
             )}
           </div>
 
@@ -77,34 +73,41 @@ export async function PostCard({ post, author, comments, likes }: Props) {
             {formatDate(post.createdAt)}
           </p>
         </div>
-      </div>
-      <div>
-        <p>{post.content}</p>
 
-        {post.image && (
-          <div className="flex justify-center bg-muted/50 dark:bg-muted/30 rounded-xl overflow-clip mt-4 max-h-152">
-            <Image
-              src={post.image}
-              alt="Imagem do post"
-              width={1920}
-              height={1920}
-              className="aspect-auto object-contain"
-            />
-          </div>
-        )}
+        <PostMenuOptions isOwner={isOwner} post={post} asChild>
+          <Button size="icon" variant="ghost">
+            <EllipsisIcon />
+          </Button>
+        </PostMenuOptions>
       </div>
+
+      <p>{post.content}</p>
+
+      {post.image && (
+        <div className="relative flex justify-center dark:bg-muted/30 rounded-xl overflow-clip max-h-152 min-h-[300px]">
+          <Image
+            src={post.image}
+            alt={post.id}
+            aria-hidden="true"
+            className="blur-2xl"
+            fill
+          />
+
+          <Image
+            src={post.image}
+            alt="Imagem do post"
+            width={1920}
+            height={1920}
+            sizes="(max-width: 768px) 100vw, 700px"
+            className="aspect-auto object-contain z-10"
+            priority
+          />
+        </div>
+      )}
+
       <div className="flex items-center gap-2">
-        <PostLikesSheet>
-          <Button variant="outline">
-            <HeartIcon /> {likes.length}
-          </Button>
-        </PostLikesSheet>
-
-        <PostCommentsSheet>
-          <Button variant="outline">
-            <MessageCircleIcon /> {comments.length}
-          </Button>
-        </PostCommentsSheet>
+        <PostLikesButtonSheet post={post} likes={likes} />
+        <PostCommentsButtonSheet post={post} comments={comments} />
       </div>
     </div>
   );
