@@ -114,7 +114,7 @@ export async function UserMenuSheet() {
           </SheetClose>
           <SheetClose asChild>
             <Button variant="outline" asChild>
-              <Link href="/settings">
+              <Link href="/profile/settings">
                 <BoltIcon />
                 Configurações
               </Link>

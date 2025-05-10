@@ -120,7 +120,7 @@ export const updateUser = async ({
     return { error: "Ocorreu um erro ao atualizar!" };
   }
 
-  revalidatePath("/settings");
+  revalidatePath("/profile/settings");
 
   return { success: "Usuário atualizado com sucesso!" };
 };

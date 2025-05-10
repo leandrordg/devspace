@@ -6,7 +6,7 @@ import { notFound } from "next/navigation";
 export default async function ProfileSettingsPage() {
   const { userId, redirectToSignIn } = await auth();
 
-  if (!userId) return redirectToSignIn({ returnBackUrl: "/settings/profile" });
+  if (!userId) return redirectToSignIn({ returnBackUrl: "/profile/settings" });
 
   const user = await getProfileById(userId);
 
