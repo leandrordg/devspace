@@ -1,6 +1,7 @@
 "use client";
 
-import { EditDialogPost } from "@/components/dialog/edit-post-dialog";
+import { DeletePostDialog } from "@/components/dialogs/delete-post-dialog";
+import { EditDialogPost } from "@/components/dialogs/edit-post-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,14 +10,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Post } from "../../generated";
 import {
   AlertTriangleIcon,
   PencilIcon,
   Share2Icon,
   Trash2Icon,
 } from "lucide-react";
-import { DeletePostDialog } from "./dialog/delete-post-dialog";
+import { Post } from "../../generated";
 
 interface Props {
   asChild?: boolean;

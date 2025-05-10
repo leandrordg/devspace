@@ -21,7 +21,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { User } from "../../../generated";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { GlobeLockIcon, ImagesIcon, TrashIcon } from "lucide-react";
@@ -30,6 +29,7 @@ import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { User } from "../../../generated";
 
 const formSchema = z.object({
   name: z.string().nonempty().optional(),
@@ -293,7 +293,7 @@ export function UpdateUserForm({ user }: Props) {
             control={form.control}
             name="private"
             render={({ field }) => (
-              <FormItem className="flex items-start gap-4">
+              <FormItem className="flex items-start gap-2">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -303,10 +303,14 @@ export function UpdateUserForm({ user }: Props) {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>Mantenha meu perfil privado</FormLabel>
+                  <FormLabel>Manter perfil privado</FormLabel>
                   <FormDescription>
                     Somente seguidores aceitos poderão interagir com você e ver
                     as suas publicações.
+                  </FormDescription>
+                  <FormDescription>
+                    <strong>Aviso:</strong> ao tornar o perfil público, todas as
+                    solicitações pendentes serão aceitas automaticamente.
                   </FormDescription>
                 </div>
               </FormItem>
@@ -316,6 +320,7 @@ export function UpdateUserForm({ user }: Props) {
           <div className="flex items-center justify-end">
             <LoadingButton
               type="submit"
+              variant="cyan"
               text="Atualizar perfil"
               loadingText="Atualizando..."
               disabled={isSubmitting || !isDirty}

@@ -21,11 +21,13 @@ model User {
   bio      String?
   private  Boolean @default(false)
 
-  posts     Post[]
-  comments  Comment[]
-  likes     Like[]
-  following Follow[]  @relation("FollowingRelation")
-  followers Follow[]  @relation("FollowersRelation")
+  posts                  Post[]
+  comments               Comment[]
+  likes                  Like[]
+  followers              Follow[]        @relation("FollowingRelation")
+  following              Follow[]        @relation("FollowersRelation")
+  followRequestsSent     FollowRequest[] @relation("FollowRequestsSent")
+  followRequestsReceived FollowRequest[] @relation("FollowRequestsReceived")
 }
 
 model Post {
@@ -62,12 +64,12 @@ model Like {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  
+  authorId  String
+  postId    String
 
-  authorId String
-  author   User   @relation(fields: [authorId], references: [clerkId], onDelete: Cascade)
-
-  postId String
-  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [clerkId], onDelete: Cascade)
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
 }
 
 model Follow {
@@ -80,4 +82,18 @@ model Follow {
 
   follower  User @relation("FollowersRelation", fields: [followerId], references: [clerkId], onDelete: Cascade)
   following User @relation("FollowingRelation", fields: [followingId], references: [clerkId], onDelete: Cascade)
+}
+
+model FollowRequest {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requesterId String
+  targetId    String
+
+  requester User @relation("FollowRequestsSent", fields: [requesterId], references: [clerkId], onDelete: Cascade)
+  target    User @relation("FollowRequestsReceived", fields: [targetId], references: [clerkId], onDelete: Cascade)
+
+  @@unique([requesterId, targetId])
 }

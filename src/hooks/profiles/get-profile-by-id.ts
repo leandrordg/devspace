@@ -6,6 +6,8 @@ export const getProfileById = async (clerkId: string) => {
     include: {
       followers: true,
       following: true,
+      followRequestsReceived: true,
+      followRequestsSent: true,
     },
   });
 };

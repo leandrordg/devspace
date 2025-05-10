@@ -1,6 +1,6 @@
 import { Button, buttonVariants } from "@/components/ui/button";
 import { VariantProps } from "class-variance-authority";
-import { Loader } from "lucide-react";
+import { Loader, LucideIcon } from "lucide-react";
 
 export function LoadingButton({
   className,
@@ -9,17 +9,20 @@ export function LoadingButton({
   text,
   loading,
   loadingText,
+  icon: Icon,
   asChild = false,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
+    icon?: LucideIcon;
     text: string;
     loading: boolean;
     loadingText: string;
   }) {
   return (
     <Button
+      className={className}
       variant={variant}
       size={size}
       disabled={loading}
@@ -32,7 +35,10 @@ export function LoadingButton({
           {loadingText}
         </>
       ) : (
-        text
+        <>
+          {Icon && <Icon className="size-4" />}
+          {text}
+        </>
       )}
     </Button>
   );

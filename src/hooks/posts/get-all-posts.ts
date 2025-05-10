@@ -4,7 +4,7 @@ export const getAllPosts = async () => {
   return await prisma.post.findMany({
     where: { private: false },
     include: {
-      author: true,
+      author: { include: { followers: true, followRequestsReceived: true } },
       likes: { include: { author: true } },
       comments: { include: { author: true } },
     },

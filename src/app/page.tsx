@@ -1,5 +1,5 @@
 import { CreatePostCard } from "@/components/create-post-card";
-import { Feed } from "@/components/feed";
+import { HomeFeed } from "@/components/feeds/home-feed";
 import { LoginCard } from "@/components/login-card";
 
 export default function Homepage() {
@@ -12,7 +12,7 @@ export default function Homepage() {
 
       <LoginCard />
 
-      <Feed />
+      <HomeFeed />
     </main>
   );
 }

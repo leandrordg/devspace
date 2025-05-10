@@ -28,7 +28,6 @@ export const updateUser = async ({
 
   if (!userId) return { error: "Usuário não autenticado" };
 
-  // verify if the user already exists
   try {
     const verifyUserAlreadyExists = await prisma.user.findUnique({
       where: { clerkId: userId },
@@ -42,7 +41,6 @@ export const updateUser = async ({
     return { error: "Ocorreu um erro ao verificar o usuário" };
   }
 
-  // verify if the email or username already exists by other user
   try {
     const userWithEmailOrUsernameExists = await prisma.user.findFirst({
       where: { NOT: { clerkId: userId }, OR: [{ email }, { username }] },
@@ -115,6 +113,32 @@ export const updateUser = async ({
       lastName,
       username,
     });
+
+    if (!isPrivate) {
+      const pendingRequests = await prisma.followRequest.findMany({
+        where: {
+          targetId: userId,
+        },
+      });
+
+      const followsToCreate = pendingRequests.map((request) => ({
+        followerId: request.requesterId,
+        followingId: request.targetId,
+      }));
+
+      if (followsToCreate.length > 0) {
+        await prisma.follow.createMany({
+          data: followsToCreate,
+          skipDuplicates: true,
+        });
+
+        await prisma.followRequest.deleteMany({
+          where: {
+            targetId: userId,
+          },
+        });
+      }
+    }
   } catch (error) {
     console.error("Erro ao atualizar no Prisma/Clerk:", error);
     return { error: "Ocorreu um erro ao atualizar!" };

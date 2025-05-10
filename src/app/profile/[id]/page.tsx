@@ -1,6 +1,8 @@
 import { CreatePostCard } from "@/components/create-post-card";
+import { ProfileFeed } from "@/components/feeds/profile-feed";
+import { FollowButton } from "@/components/follow-button";
 import { InfoCard } from "@/components/info-card";
-import { ProfileFeed } from "@/components/profile-feed";
+import { MessageButton } from "@/components/message-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,12 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { getProfileById } from "@/hooks/profiles/get-profile-by-id";
 import { auth } from "@clerk/nextjs/server";
-import {
-  GlobeLockIcon,
-  PencilIcon,
-  SendIcon,
-  UserRoundPlusIcon,
-} from "lucide-react";
+import { GlobeLockIcon, PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -40,7 +37,12 @@ export default async function ProfilePage({ params }: Props) {
     .join("");
 
   const isFollowing = user.followers.some(
-    (follower) => follower.followerId === userId
+    (follower) =>
+      follower.followerId === userId && follower.followingId === user.clerkId
+  );
+
+  const isFollowingRequest = user.followRequestsReceived.some(
+    (request) => request.requesterId === userId
   );
 
   return (
@@ -55,11 +57,13 @@ export default async function ProfilePage({ params }: Props) {
             <AvatarFallback>{userInitials}</AvatarFallback>
           </Avatar>
 
-          <div>
+          <div className="space-y-1">
             <p className="text-muted-foreground">{user.username}</p>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl tracking-tight">{user.name}</h1>
+              <h1 className="text-xl md:text-2xl tracking-tight">
+                {user.name}
+              </h1>
 
               {user.private && (
                 <Tooltip>
@@ -74,6 +78,21 @@ export default async function ProfilePage({ params }: Props) {
             <p className="hidden md:block text-sm text-muted-foreground">
               {user.bio ?? "Esse usuário não possui uma biografia."}
             </p>
+
+            <div className="hidden md:flex flex-wrap items-center gap-2 mt-2">
+              <Link
+                href={`/profile/${user.clerkId}/followers`}
+                className="text-sm text-muted-foreground"
+              >
+                {user.followers.length} seguidores
+              </Link>
+              <Link
+                href={`/profile/${user.clerkId}/following`}
+                className="text-sm text-muted-foreground"
+              >
+                {user.following.length} seguindo
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -81,15 +100,29 @@ export default async function ProfilePage({ params }: Props) {
           {user.bio ?? "Esse usuário não possui uma biografia."}
         </p>
 
+        <div className="flex flex-wrap items-center gap-2 md:hidden">
+          <Link
+            href={`/profile/${user.clerkId}/followers`}
+            className="text-sm text-muted-foreground"
+          >
+            {user.followers.length} seguidores
+          </Link>
+          <Link
+            href={`/profile/${user.clerkId}/following`}
+            className="text-sm text-muted-foreground"
+          >
+            {user.following.length} seguindo
+          </Link>
+        </div>
+
         {!isOwner ? (
           <div className="flex items-center gap-2">
-            <Button className="flex-1" variant="cyan">
-              <UserRoundPlusIcon />
-              <span className="hidden md:block">Seguir</span>
-            </Button>
-            <Button className="flex-1" variant="outline">
-              <SendIcon /> <span className="hidden md:block">Mensagem</span>
-            </Button>
+            <FollowButton
+              user={user}
+              isFollowing={isFollowing}
+              isFollowingRequest={isFollowingRequest}
+            />
+            <MessageButton />
           </div>
         ) : (
           <div className="flex items-center gap-2">
