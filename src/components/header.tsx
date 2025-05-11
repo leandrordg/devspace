@@ -13,7 +13,7 @@ import Link from "next/link";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-3xl border-b h-16">
+    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-3xl border-b dark:border-transparent h-16">
       <div className="flex items-center h-full gap-4 justify-between max-w-7xl mx-auto p-4 md:px-6">
         <Link href="/">
           <Image

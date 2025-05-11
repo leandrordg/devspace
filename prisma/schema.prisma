@@ -101,10 +101,13 @@ model FollowRequest {
 }
 
 enum NotificationType {
+  FOLLOW
   FOLLOW_REQUEST
   FOLLOW_REQUEST_ACCEPTED
-  COMMENT
   LIKE
+  COMMENT
+  COMMENT_REPLY
+  MENTION
 }
 
 model Notification {
@@ -113,10 +116,10 @@ model Notification {
   updatedAt DateTime @updatedAt
 
   type        NotificationType
-  message     String
   read        Boolean          @default(false)
   recipientId String
   senderId    String
+  data        Json?
 
   recipient User @relation("NotificationsReceived", fields: [recipientId], references: [clerkId], onDelete: Cascade)
   sender    User @relation("NotificationsSent", fields: [senderId], references: [clerkId], onDelete: Cascade)

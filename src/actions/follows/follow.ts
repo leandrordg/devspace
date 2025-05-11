@@ -9,70 +9,78 @@ export async function followUser(id: string) {
 
   if (!userId) return { error: "Usuário não autenticado" };
 
-  const userExists = await prisma.user.findUnique({
-    where: { id },
-  });
-
-  if (!userExists) return { error: "Usuário não encontrado" };
-
-  if (userExists.clerkId === userId) {
-    return { error: "Você não pode seguir você mesmo" };
-  }
-
-  const isAlreadyFollowing = await prisma.follow.findFirst({
-    where: {
-      followerId: userId,
-      followingId: userExists.clerkId,
-    },
-  });
-
-  if (isAlreadyFollowing) {
-    return { error: "Você já segue esse usuário" };
-  }
-
-  if (userExists.private) {
-    const requestAlreadyExists = await prisma.followRequest.findFirst({
-      where: {
-        requesterId: userId,
-        targetId: userExists.clerkId,
-      },
+  try {
+    const userExists = await prisma.user.findUnique({
+      where: { id },
     });
 
-    if (requestAlreadyExists) {
-      return { error: "Solicitação já enviada" };
+    if (!userExists) return { error: "Usuário não encontrado" };
+
+    if (userExists.clerkId === userId) {
+      return { error: "Você não pode seguir você mesmo" };
     }
 
-    await prisma.followRequest.create({
-      data: {
-        requesterId: userId,
-        targetId: userExists.clerkId,
+    const isAlreadyFollowing = await prisma.follow.findFirst({
+      where: {
+        followerId: userId,
+        followingId: userExists.clerkId,
       },
     });
 
-    const sender = await prisma.user.findUnique({ where: { clerkId: userId } });
+    if (isAlreadyFollowing) return { error: "Você já segue esse usuário" };
+
+    if (userExists.private) {
+      const requestAlreadyExists = await prisma.followRequest.findFirst({
+        where: {
+          requesterId: userId,
+          targetId: userExists.clerkId,
+        },
+      });
+
+      if (requestAlreadyExists) return { error: "Solicitação já enviada" };
+
+      await prisma.followRequest.create({
+        data: {
+          requesterId: userId,
+          targetId: userExists.clerkId,
+        },
+      });
+
+      const sender = await prisma.user.findUnique({
+        where: { clerkId: userId },
+      });
+
+      await prisma.notification.create({
+        data: {
+          type: "FOLLOW_REQUEST",
+          recipientId: userExists.clerkId,
+          senderId: userId,
+        },
+      });
+
+      revalidatePath("/");
+      return { success: "Solicitação enviada com sucesso" };
+    }
+
+    await prisma.follow.create({
+      data: {
+        followerId: userId,
+        followingId: userExists.clerkId,
+      },
+    });
 
     await prisma.notification.create({
       data: {
-        type: "FOLLOW_REQUEST",
-        message: `${sender?.username} enviou uma solicitação para seguir você.`,
+        type: "FOLLOW",
         recipientId: userExists.clerkId,
         senderId: userId,
       },
     });
 
     revalidatePath("/");
-
-    return { success: "Solicitação enviada com sucesso" };
+    return { success: `Você começou a seguir ${userExists.username}` };
+  } catch {
+    console.error("Erro ao seguir o usuário.");
+    return { error: "Erro ao seguir o usuário." };
   }
-
-  await prisma.follow.create({
-    data: {
-      followerId: userId,
-      followingId: userExists.clerkId,
-    },
-  });
-
-  revalidatePath("/");
-
-  return { success: `Você começou a seguir ${userExists.username}` };
 }

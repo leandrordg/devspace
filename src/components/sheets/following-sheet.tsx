@@ -14,14 +14,15 @@ import Link from "next/link";
 import { Follow, User } from "../../../generated";
 
 interface Props {
-  children: React.ReactNode;
   user: User;
+  isOwner: boolean;
+  children: React.ReactNode;
   following: (Follow & {
     following: User;
   })[];
 }
 
-export function FollowingSheet({ children, user, following }: Props) {
+export function FollowingSheet({ children, isOwner, user, following }: Props) {
   return (
     <Sheet>
       <SheetTrigger className="cursor-pointer" asChild>

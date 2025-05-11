@@ -13,6 +13,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { SignInButton, useUser } from "@clerk/nextjs";
 import { CheckIcon, ClockIcon, UserPlusIcon } from "lucide-react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function FollowButton({ user, isFollowing, isFollowingRequest }: Props) {
+  const { user: currentUser } = useUser();
   const [isPending, startTransition] = useTransition();
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -45,6 +47,8 @@ export function FollowButton({ user, isFollowing, isFollowingRequest }: Props) {
   };
 
   const handleClick = () => {
+    if (isPending) return;
+
     if ((isFollowing || isFollowingRequest) && user.private) {
       setDialogOpen(true);
     } else {
@@ -70,16 +74,33 @@ export function FollowButton({ user, isFollowing, isFollowingRequest }: Props) {
 
   return (
     <>
-      <LoadingButton
-        className="flex-1"
-        variant={isFollowing ? "outline" : "cyan"}
-        loading={isPending}
-        disabled={isPending}
-        icon={getIcons()}
-        text={getButtonText()}
-        loadingText="Carregando..."
-        onClick={handleClick}
-      />
+      {!currentUser ? (
+        <SignInButton
+          mode="modal"
+          fallbackRedirectUrl={`/profile/${user.clerkId}`}
+        >
+          <LoadingButton
+            className="flex-1"
+            variant="cyan"
+            loading={isPending}
+            disabled={isPending}
+            icon={UserPlusIcon}
+            text="Seguir"
+            loadingText="Carregando..."
+          />
+        </SignInButton>
+      ) : (
+        <LoadingButton
+          className="flex-1"
+          variant={isFollowing ? "outline" : "cyan"}
+          loading={isPending}
+          disabled={isPending}
+          icon={getIcons()}
+          text={getButtonText()}
+          loadingText="Carregando..."
+          onClick={handleClick}
+        />
+      )}
 
       <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <AlertDialogContent>

@@ -25,67 +25,58 @@ export const updateUser = async ({
   private: isPrivate,
 }: z.infer<typeof schema>) => {
   const { userId } = await auth();
-
   if (!userId) return { error: "Usuário não autenticado" };
 
   try {
-    const verifyUserAlreadyExists = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { clerkId: userId },
     });
 
-    if (!verifyUserAlreadyExists) {
+    if (!existingUser) {
       return { error: "Você não possui uma conta ativa" };
     }
-  } catch {
-    console.error("Erro ao verificar se o usuário existe");
-    return { error: "Ocorreu um erro ao verificar o usuário" };
-  }
 
-  try {
-    const userWithEmailOrUsernameExists = await prisma.user.findFirst({
-      where: { NOT: { clerkId: userId }, OR: [{ email }, { username }] },
+    const conflictingUser = await prisma.user.findFirst({
+      where: {
+        NOT: { clerkId: userId },
+        OR: [{ email }, { username }],
+      },
     });
 
-    if (userWithEmailOrUsernameExists) {
+    if (conflictingUser) {
       const message =
-        userWithEmailOrUsernameExists.email === email
+        conflictingUser.email === email
           ? "Email já cadastrado"
           : "Nome de usuário já cadastrado";
-
       return { error: message };
     }
-  } catch {
-    console.error("Erro ao verificar se o email ou nome de usuário já existe");
-    return { error: "Ocorreu um erro ao verificar o email ou nome de usuário" };
-  }
 
-  const clerk = await clerkClient();
+    const clerk = await clerkClient();
 
-  let uploadResult: UploadApiResponse | undefined;
-  let finalImageUrl: string | undefined;
+    let finalImageUrl: string | undefined;
+    if (image && typeof image !== "string") {
+      const imageArrayBuffer = await image.arrayBuffer();
+      const imageBuffer = Buffer.from(imageArrayBuffer);
 
-  if (image && typeof image !== "string") {
-    const imageArrayBuffer = await image.arrayBuffer();
-    const imageBuffer = Buffer.from(imageArrayBuffer);
-
-    uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
+      const uploadResult: UploadApiResponse = await new Promise(
+        (resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream(
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result as UploadApiResponse);
+            }
+          );
+          uploadStream.end(imageBuffer);
         }
       );
-      uploadStream.end(imageBuffer);
-    });
 
-    finalImageUrl = uploadResult?.secure_url;
+      finalImageUrl = uploadResult.secure_url;
 
-    await clerk.users.updateUserProfileImage(userId, { file: image });
-  } else if (typeof image === "string") {
-    finalImageUrl = image;
-  }
+      await clerk.users.updateUserProfileImage(userId, { file: image });
+    } else if (typeof image === "string") {
+      finalImageUrl = image;
+    }
 
-  try {
     await prisma.user.update({
       where: { clerkId: userId },
       data: {
@@ -139,12 +130,11 @@ export const updateUser = async ({
         });
       }
     }
+
+    revalidatePath("/profile/settings");
+    return { success: "Perfil atualizado com sucesso" };
   } catch (error) {
-    console.error("Erro ao atualizar no Prisma/Clerk:", error);
-    return { error: "Ocorreu um erro ao atualizar!" };
+    console.error("Erro ao atualizar o usuário:", error);
+    return { error: "Ocorreu um erro ao atualizar o perfil" };
   }
-
-  revalidatePath("/profile/settings");
-
-  return { success: "Usuário atualizado com sucesso!" };
 };

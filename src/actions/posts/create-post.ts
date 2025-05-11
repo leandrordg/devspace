@@ -22,43 +22,47 @@ export const createPost = async ({
 
   if (!userId) return { error: "Usuário não autenticado" };
 
-  const userExists = await prisma.user.findUnique({
-    where: { clerkId: userId },
-  });
-
-  if (!userExists) return { error: "Usuário não existe" };
-
-  let uploadResult: UploadApiResponse | undefined = undefined;
-
-  if (image) {
-    const imageArrayBuffer = await image.arrayBuffer();
-    const imageBuffer = Buffer.from(imageArrayBuffer);
-
-    uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        (error, result) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
-          }
-        }
-      );
-
-      uploadStream.end(imageBuffer);
+  try {
+    const userExists = await prisma.user.findUnique({
+      where: { clerkId: userId },
     });
+
+    if (!userExists) return { error: "Usuário não existe" };
+
+    let uploadResult: UploadApiResponse | undefined = undefined;
+
+    if (image) {
+      const imageArrayBuffer = await image.arrayBuffer();
+      const imageBuffer = Buffer.from(imageArrayBuffer);
+
+      uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result);
+            }
+          }
+        );
+
+        uploadStream.end(imageBuffer);
+      });
+    }
+
+    await prisma.post.create({
+      data: {
+        content,
+        private: privatePost,
+        authorId: userId,
+        image: uploadResult?.secure_url,
+      },
+    });
+
+    revalidatePath("/posts/create");
+    return { success: "Publicação criada com sucesso" };
+  } catch {
+    console.error("Erro ao criar a publicação");
+    return { error: "Erro ao criar a publicação" };
   }
-
-  await prisma.post.create({
-    data: {
-      content,
-      private: privatePost,
-      authorId: userId,
-      image: uploadResult?.secure_url,
-    },
-  });
-
-  revalidatePath("/posts/create");
-
-  return { success: "Publicação adicionada com sucesso!" };
 };

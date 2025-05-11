@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { GlobeLockIcon, ImagesIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -45,6 +46,7 @@ interface Props {
 }
 
 export function UpdateUserForm({ user }: Props) {
+  const router = useRouter();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -66,6 +68,7 @@ export function UpdateUserForm({ user }: Props) {
     if (success) {
       setPreviewUrl(null);
       toast.success(success);
+      router.back();
     }
 
     if (error) toast.error(error);

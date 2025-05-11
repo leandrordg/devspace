@@ -16,7 +16,7 @@ import { getProfileById } from "@/hooks/profiles/get-profile-by-id";
 import { auth } from "@clerk/nextjs/server";
 import { GlobeLockIcon, PencilIcon } from "lucide-react";
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -25,8 +25,6 @@ interface Props {
 export default async function ProfilePage({ params }: Props) {
   const { id } = await params;
   const { userId } = await auth();
-
-  if (userId === id) redirect("/profile");
 
   const user = await getProfileById(id);
 
@@ -79,18 +77,28 @@ export default async function ProfilePage({ params }: Props) {
               )}
             </div>
 
-            <p className="hidden md:block text-sm text-muted-foreground">
-              {user.bio ?? "Esse usuário não possui uma biografia."}
-            </p>
+            {user.bio && (
+              <p className="hidden md:block text-sm text-muted-foreground">
+                {user.bio}
+              </p>
+            )}
 
             <div className="hidden md:flex flex-wrap items-center gap-2 mt-2">
-              <FollowersSheet user={user} followers={user.followers}>
+              <FollowersSheet
+                user={user}
+                isOwner={isOwner}
+                followers={user.followers}
+              >
                 <p className="text-sm text-muted-foreground">
                   {user.followers.length} seguidores
                 </p>
               </FollowersSheet>
 
-              <FollowingSheet user={user} following={user.following}>
+              <FollowingSheet
+                user={user}
+                isOwner={isOwner}
+                following={user.following}
+              >
                 <p className="text-sm text-muted-foreground">
                   {user.following.length} seguindo
                 </p>
@@ -99,18 +107,26 @@ export default async function ProfilePage({ params }: Props) {
           </div>
         </div>
 
-        <p className="md:hidden text-sm text-muted-foreground">
-          {user.bio ?? "Esse usuário não possui uma biografia."}
-        </p>
+        {user.bio && (
+          <p className="md:hidden text-sm text-muted-foreground">{user.bio}</p>
+        )}
 
         <div className="md:hidden flex flex-wrap items-center gap-2">
-          <FollowersSheet user={user} followers={user.followers}>
+          <FollowersSheet
+            user={user}
+            isOwner={isOwner}
+            followers={user.followers}
+          >
             <p className="text-sm text-muted-foreground">
               {user.followers.length} seguidores
             </p>
           </FollowersSheet>
 
-          <FollowingSheet user={user} following={user.following}>
+          <FollowingSheet
+            user={user}
+            isOwner={isOwner}
+            following={user.following}
+          >
             <p className="text-sm text-muted-foreground">
               {user.following.length} seguindo
             </p>
@@ -129,7 +145,7 @@ export default async function ProfilePage({ params }: Props) {
         ) : (
           <div className="flex items-center gap-2">
             <Button className="flex-1" variant="cyan" asChild>
-              <Link href="/profile/settings">
+              <Link href={`/profile/${user.clerkId}/settings`}>
                 <PencilIcon />
                 Editar perfil
               </Link>

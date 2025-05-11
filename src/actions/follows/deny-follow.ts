@@ -9,19 +9,25 @@ export const denyFollowRequest = async (requestId: string) => {
 
   if (!userId) return { error: "Usuário não autenticado." };
 
-  const followRequest = await prisma.followRequest.findUnique({
-    where: { id: requestId },
-  });
+  try {
+    const followRequest = await prisma.followRequest.findUnique({
+      where: { id: requestId },
+    });
 
-  if (!followRequest || followRequest.targetId !== userId) {
-    return { error: "Solicitação não encontrada ou não pertence ao usuário." };
+    if (!followRequest || followRequest.targetId !== userId) {
+      return {
+        error: "Solicitação não encontrada ou não pertence ao usuário",
+      };
+    }
+
+    await prisma.followRequest.delete({
+      where: { id: requestId },
+    });
+
+    revalidatePath("/");
+    return { success: "Solicitação negada com sucesso!" };
+  } catch {
+    console.error("Erro ao negar a solicitação de seguir.");
+    return { error: "Erro ao negar a solicitação de seguir." };
   }
-
-  await prisma.followRequest.delete({
-    where: { id: requestId },
-  });
-
-  revalidatePath("/profile/followers/requests");
-
-  return { success: "Solicitação recusada com sucesso!" };
 };

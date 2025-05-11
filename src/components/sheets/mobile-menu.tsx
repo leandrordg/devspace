@@ -18,6 +18,7 @@ import { SignOutButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
+  BellIcon,
   BookHeartIcon,
   BookPlusIcon,
   HomeIcon,
@@ -102,7 +103,7 @@ export async function MobileMenu() {
           {user && (
             <SheetClose asChild>
               <Button variant="outline" className="justify-start" asChild>
-                <Link href="/profile">
+                <Link href={`/profile/${user.id}`}>
                   <UserRoundIcon />
                   Meu perfil
                 </Link>
@@ -113,13 +114,22 @@ export async function MobileMenu() {
           {user && (
             <SheetClose asChild>
               <Button variant="outline" className="justify-start" asChild>
-                <Link href="/profile/settings">
+                <Link href={`/profile/${user.id}/settings`}>
                   <UserRoundIcon />
                   Configurações
                 </Link>
               </Button>
             </SheetClose>
           )}
+
+          <SheetClose asChild>
+            <Button variant="outline" className="justify-start" asChild>
+              <Link href="/notifications">
+                <BellIcon />
+                Notificações
+              </Link>
+            </Button>
+          </SheetClose>
 
           <SheetClose asChild>
             <Button variant="outline" className="justify-start" asChild>

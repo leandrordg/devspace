@@ -59,13 +59,11 @@ export async function PostCard({
     (request) => request.requesterId === userId
   );
 
-  const profileUrl = isOwner ? "/profile" : `/profile/${author.clerkId}`;
-
   return (
     <div className="rounded-xl bg-background dark:bg-muted/30 p-4 space-y-2 border">
       <div className="flex items-center gap-3">
         <Button size="icon" variant="ghost" asChild>
-          <Link href={profileUrl}>
+          <Link href={`/profile/${author.clerkId}`}>
             <Avatar className="size-8">
               <AvatarImage src={author.image} />
               <AvatarFallback>{authorInitials}</AvatarFallback>
@@ -74,7 +72,7 @@ export async function PostCard({
         </Button>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <Link href={profileUrl}>
+            <Link href={`/profile/${author.clerkId}`}>
               <p>{author.username}</p>
             </Link>
 

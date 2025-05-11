@@ -22,12 +22,11 @@ export async function deletePost(values: z.infer<typeof schema>) {
     }
 
     await prisma.post.delete({ where: { id: values.id } });
+
+    revalidatePath(`/posts/${values.id}`);
+    return { success: "Publicação excluída com sucesso" };
   } catch {
     console.error("Erro ao excluir a publicação");
     return { error: "Erro ao excluir a publicação" };
   }
-
-  revalidatePath(`/posts/${values.id}`);
-
-  return { success: "Publicação excluída com sucesso" };
 }

@@ -11,7 +11,7 @@ export async function LoginCard() {
   return (
     <div className="bg-gradient-to-r from-blue-500 to-blue-700 p-4 rounded-xl flex items-center justify-between gap-2">
       <div>
-        <h2 className="font-medium tracking-tighter">bem vindo ao devspace</h2>
+        <h2 className="font-bold tracking-tighter">bem vindo ao devspace</h2>
         <p className="text-sm">
           Acesse a sua conta para ver as publicações de outros usuários e
           interagir com eles.

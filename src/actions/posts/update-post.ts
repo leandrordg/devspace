@@ -33,12 +33,11 @@ export async function updatePost({
       where: { id },
       data: { content, private: privatePost },
     });
+
+    revalidatePath(`/posts/${id}`);
+    return { success: "Publicação atualizada com sucesso" };
   } catch {
     console.error("Erro ao atualizar a publicação");
     return { error: "Erro ao atualizar a publicação" };
   }
-
-  revalidatePath(`/posts/${id}`);
-
-  return { success: "Publicação atualizada com sucesso" };
 }
